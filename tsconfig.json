@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@r3ply/*": ["./packages/*/src"]
+    },
+    "rootDir": "."
+  },
+  "exclude": ["**/dist", "**/node_modules"]
+}
