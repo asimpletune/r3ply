@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% import "macros/comments.html" as comments %}
+
+{% block title %}
+  {% set title = "Comment Threads" %}
+  <title>{{ title }}</title>
+  <meta property="og:title" content="{{ title }}" />
+  <meta name="twitter:title" content="{{ title }}" />
+{% endblock title %}
+
+{% block content %}
+{{ util::other_breadcrumbs(links=["[r3ply.com](/)", "[threads](/threads/)"]) }}
+<div class="my-12 pb-12">
+<h1 id="all-threads">All Threads <a href="#all-threads" class="text-pink-300 hover:text-pink-400 no-underline hover:underline">#</a></h1>
+{{'
+Below are all comment threads. A thread is a comment and all its descendants.
+
+_See also just [replies](/replies/) or browse comments [by author](/commenters/), [by page](/subjects/), or just [all comments](/comments/)._
+' | markdown | safe }}
+</div>
+{% endblock content %}
+
+{% block allow_comments %}
+  {% set allow_comments = true %}
+{% endblock allow_comments %}
+
+{# An variable named `comments` that is an array of pages has to be set here for the template to work #}
+{% block choose_comments %}
+  {% set all_threads = get_taxonomy_term(kind="threads", term="all", required=false) %}
+  {% set comments = all_threads.pages | default(value=[]) %}
+{% endblock choose_comments %}
+{% block pending_comments %}{% endblock pending_comments %}
+{# Hide the write comment button #}
+{% block write_comment_control %}{% endblock write_comment_control %}
+{% block info_comment_control %}{% endblock info_comment_control %}
+{% block subscribe_controls %}{% endblock subscribe_controls %}

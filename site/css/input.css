@@ -1,0 +1,143 @@
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/typography';
+@plugin '@tailwindcss/forms';
+
+/* Tailwind doesn't have built-in "flash" animation */
+@keyframes flash {
+  0% { background-color: #ffffcc; }
+  100% { background-color: #2b303b; } /* original background */
+}
+
+.flash {
+  animation: flash 0.5s ease;
+}
+
+code:not(pre code) {
+  color: var(--color-blue-700);
+  background-color: var(--color-green-200);
+}
+
+pre code {
+  white-space: pre-wrap;   /* Wrap long lines */
+  word-break: break-word;  /* Break words if needed */
+}
+
+.prose {
+  /* tailwind prose doesn't have a footer styling so I have to style it here */
+  footer {
+    margin-top: 3em;
+    padding-top: 2em;
+    border-top: 1px solid var(--color-gray-800);
+    /* Dark mode variant */
+    @media (prefers-color-scheme: dark) {
+      border-top: 1px solid var(--color-gray-300); /* lighter border for dark bg */
+    }
+  }
+  /* Use default for selecting text inside long code snippets */
+  pre code {
+    user-select: auto;
+  }
+  /* Auto select inline code */
+  code {
+    user-select: all;
+  }
+}
+
+/* BEGIN suggested Zola styling for highlighting code */
+/* See https://www.getzola.org/documentation/content/syntax-highlighting/#styling-codeblocks */
+pre {
+  padding: 1rem;
+  overflow: auto;
+}
+/* The line numbers already provide some kind of left/right padding */
+pre[data-linenos] {
+  padding: 1rem 0;
+}
+pre table td {
+  padding: 0;
+}
+/* The line number cells */
+pre table td:nth-of-type(1) {
+  /* commented because text editors typically right align their line no's. Leaving in place to document what changed from the Zola prescribed practice. */
+  /* text-align: center; */
+  vertical-align: top;
+  user-select: none;
+}
+pre mark {
+  /* If you want your highlights to take the full width */
+  display: block;
+}
+pre table {
+  width: 100%;
+  border-collapse: collapse;
+}
+/* END suggested Zola styling for highlighting code */
+
+pre[data-name]::before {
+  content: "=== 📄 " attr(data-name) " ===";
+  font-weight: bold;
+  padding-left: 1ch;
+}
+
+pre[data-name] code {
+  margin-top: 1ch;
+  border-top: solid violet 1px;
+  display: block;
+  padding-top: 2ch;
+}
+
+pre mark {
+  /* only shows if inline styles aren't set... used to avoid the default of the text being black, where there's insufficient contrast */
+  color: cyan;
+}
+
+pre[data-linenos] {
+  table {
+    margin-top: 0;
+    margin-bottom: 0;
+    tr:has(mark) {
+      /* Used to override mark background color because some lines span multiple rows, leading to the text but not the line no. to get a background. */
+      background-color: #172554ff !important;
+    }
+    tbody {
+      display: block;
+    }
+    tr {
+      border: none;
+      display: block;
+      td mark {
+        /* Set background to transparent so it can override the inline styles and have the row (see above) set the background */
+        background-color: transparent !important;
+      }
+      td:first-of-type {
+        padding-left: 1ch;
+        width: 4ch;
+        user-select: none;
+        -webkit-user-select: none;
+        text-align: right;
+        mark {
+          /* only shows if inline styles aren't set... used to avoid the default of the text being black, where there's insufficient contrast */
+          color: violet;
+        }
+      }
+      td:nth-of-type(2) {
+        padding-left: 1ch;
+        mark {
+          /* only shows if inline styles aren't set... used to avoid the default of the text being black, where there's insufficient contrast */
+          color: cyan;
+        }
+      }
+    }
+  }
+}
+
+details#doc-version-picker,
+#comments details {
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary {
+    list-style: none;
+  }
+}

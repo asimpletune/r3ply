@@ -1,28 +1,46 @@
 {
   "name": "r3ply",
+  "author": "Spencer Van Wessem Scorcelletti",
+  "license": "AGPL-3.0-only",
   "private": true,
+  "version": "0.0.1",
+  "description": "Monorepo root of the r3ply commenting system",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "fmt": "prettier --write \"**/*.{js,cjs,ts,mts,jsx,tsx,json,md,toml}\"",
+    "initialize": "git submodule update --init --remote --recursive",
+    "fmt": "prettier --write \"**/*.{js,cjs,ts,mts,jsx,tsx,json,toml}\"",
     "build:wasm": "pnpm --filter @r3ply/wasm run build:wasm && pnpm --filter @r3ply/wasm run pack",
     "build:pkgs": "pnpm -r --filter './packages/*' run build",
     "build:apps": "pnpm -r --filter './apps/*' run build",
-    "build:all": "pnpm build:wasm && pnpm build:pkgs && pnpm build:apps",
+    "build:site": "pnpm initialize && pnpm -r --filter '@r3ply/schema' run build && pnpm -r --filter './site' run copy:schemas && pnpm -r --filter './site' run build",
+    "build:all": "pnpm build:wasm && pnpm build:pkgs && pnpm build:apps && pnpm build:site",
     "test:ts": "vitest run",
     "test:ts:watch": "vitest",
-    "test:all": "pnpm -r test"
+    "test:all": "pnpm -r test",
+    "site": "pnpm initialize && pnpm -r --filter './site' run serve"
   },
   "pnpm": {
-    "overrides": {}
+    "overrides": {},
+    "supportedArchitectures": {
+      "os": [
+        "current",
+        "linux"
+      ],
+      "cpu": [
+        "current",
+        "x64"
+      ]
+    }
   },
   "devDependencies": {
-    "prettier": "^3.5.3",
-    "prettier-plugin-toml": "^2.0.2",
-    "vitest": "^3.0.8"
+    "prettier": "^3.8.4",
+    "prettier-plugin-toml": "^2.0.6",
+    "vitest": "^3.2.6"
   },
   "volta": {
-    "node": "20.10.0"
-  }
+    "node": "22.9.0"
+  },
+  "packageManager": "pnpm@10.11.1"
 }

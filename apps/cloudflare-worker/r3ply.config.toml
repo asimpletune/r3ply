@@ -1,6 +1,11 @@
 version = "0.0.1"
-domain = "r3ply.com"
+domains = [
+  "r3ply.com",
+  "test.r3ply.com",
+  "api.r3ply.com",
+  "r3ply-cloudflare-worker.spence.workers.dev",
+]
 
 [[admin]]
-name = "Guybrush Threepwood"
-email = "guybrush@example.com"
+name = "Spence"
+email = "spence@admin.r3ply.com"

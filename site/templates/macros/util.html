@@ -1,0 +1,346 @@
+{#
+  Zola/Tera don't have a urldecode feature
+#}
+{% macro urldecode(encoded) %}
+ {{ encoded
+  | regex_replace(pattern="%20", rep=" ")
+  | regex_replace(pattern="%21", rep="!")
+  | regex_replace(pattern="%22", rep='"')
+  | regex_replace(pattern="%23", rep="#")
+  | regex_replace(pattern="%24", rep="$")
+  | regex_replace(pattern="%25", rep="%")
+  | regex_replace(pattern="%26", rep="&")
+  | regex_replace(pattern="%27", rep="'")
+  | regex_replace(pattern="%28", rep="(")
+  | regex_replace(pattern="%29", rep=")")
+  | regex_replace(pattern="%2C", rep=",")
+  | regex_replace(pattern="%2D", rep="-")
+  | regex_replace(pattern="%2E", rep=".")
+  | regex_replace(pattern="%2F", rep="/")
+  | regex_replace(pattern="%3A", rep=":")
+  | regex_replace(pattern="%3B", rep=";")
+  | regex_replace(pattern="%3F", rep="?")
+}}
+{% endmacro  %}
+
+{% macro mailto(to, subject, body) -%}
+  mailto:{{ to | urlencode }}?subject={{ subject | urlencode }}&body={{ body | urlencode }}
+{%- endmacro %}
+
+{% macro mailto_text_fragment(to, path, body, icon="💬", delay=600) %}
+<script>
+(function () {
+   const CONFIG = {
+    to: "{{ to | safe }}",
+    subjectPrefix: "{{ path | safe }}#:~:text=",
+    body: `{{ body | safe }}`,
+    icon: "{{ icon }}",
+    delay: {{ delay | int }},
+    buttonSize: 36, // px square
+    margin: 8
+  }
+
+  let button = null
+  let showTimer = null
+  let lastSelection = ""
+
+  // Remove button helper
+  function removeButton() {
+    if (button) {
+      button.remove()
+      button = null
+    }
+  }
+
+  // Double-encode subject so mail clients keep % sequences intact
+  function createMailtoLink(selectedText) {
+    const paraphrased_selected_text = "> " + selectedText.split("\n").join("\r\n> ")
+    const raw = CONFIG.subjectPrefix + encodeURIComponent(selectedText.trim())
+    const encoded = encodeURIComponent(raw)
+    const body = encodeURIComponent(CONFIG.body + "\r\nYou are responding to the following text:\r\n\r\n" + paraphrased_selected_text.trim() + "")
+    return `mailto:${encodeURIComponent(CONFIG.to)}?subject=${encoded}&body=${body}`
+  }
+
+  // Get best rect for selection. Prefer a visible client rect (non-zero width/height).
+  function getSelectionRect() {
+    const sel = window.getSelection()
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return null
+
+    try {
+      const range = sel.getRangeAt(0)
+      const rects = Array.from(range.getClientRects()).filter(r => r.width > 0 && r.height > 0)
+      // Prefer the first visible rect or the middle rect for multiline
+      if (rects.length === 0) {
+        const r = range.getBoundingClientRect()
+        if (r && (r.width || r.height)) return r
+        return null
+      }
+      // Choose rect in the vertical middle (for multiline, pick center)
+      const midIndex = Math.floor(rects.length / 2)
+      return rects[midIndex]
+    } catch (e) {
+      return null
+    }
+  }
+
+  // Compute viewport offsets (visualViewport is required on iOS for accurate coords)
+  function viewportOffsets() {
+    if (window.visualViewport) {
+      return {
+        offsetX: window.visualViewport.offsetLeft || 0,
+        offsetY: window.visualViewport.offsetTop || 0,
+        width: window.visualViewport.width,
+        height: window.visualViewport.height,
+        pageLeft: window.visualViewport.pageLeft || 0,
+        pageTop: window.visualViewport.pageTop || 0
+      }
+    }
+    return {
+      offsetX: 0,
+      offsetY: 0,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      pageLeft: 0,
+      pageTop: window.scrollY || 0
+    }
+  }
+
+  // Show the floating button near selection rect
+  function showButtonForSelection(selectedText) {
+    const rect = getSelectionRect()
+    if (!rect) return removeButton()
+
+    removeButton()
+
+    button = document.createElement("button")
+    button.type = "button"
+    button.ariaLabel = "Comment via email"
+    button.textContent = CONFIG.icon
+
+    // Styling
+    Object.assign(button.style, {
+      position: "fixed", // fixed works on modern iOS; fallback below if needed
+      zIndex: 999999,
+      width: CONFIG.buttonSize + "px",
+      height: CONFIG.buttonSize + "px",
+      lineHeight: CONFIG.buttonSize + "px",
+      textAlign: "center",
+      fontSize: "18px",
+      padding: "0",
+      borderRadius: "10px",
+      border: "none",
+      background: "#fff",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.18)",
+      cursor: "pointer",
+      transition: "opacity 0.14s",
+      opacity: "0",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center"
+    })
+
+    // Use visualViewport when available to map client coords to viewport correctly
+    const vp = viewportOffsets()
+
+    // rect's properties are relative to layout viewport — clientX/Y used are fine when using fixed,
+    // but on iOS with visualViewport we need to consider offsetTop/Left.
+    // We'll compute a desired position above-right of the rect center first.
+    let desiredTop = (rect.top + rect.height / 2) - CONFIG.buttonSize - 6 // prefer above
+    let desiredLeft = rect.right + 6 // prefer right of selection
+
+    // If visualViewport provided offsets, adjust for them.
+    if (window.visualViewport) {
+      // rect.top is relative to layout viewport; visualViewport.pageTop shifts with keyboard/zoom
+      // Map to visual viewport space:
+      desiredTop = (rect.top - vp.offsetY) + vp.pageTop - CONFIG.buttonSize - 6
+      desiredLeft = (rect.right - vp.offsetX) + vp.pageLeft + 6
+    } else {
+      // account for page scroll
+      desiredTop = rect.top + window.scrollY - CONFIG.buttonSize - 6
+      desiredLeft = rect.right + (window.scrollX || 0) + 6
+    }
+
+    // For narrow screens, center above selection instead of right
+    if (vp.width < 420) {
+      if (window.visualViewport) {
+        desiredLeft = (rect.left - vp.offsetX) + vp.pageLeft + (rect.width / 2) - CONFIG.buttonSize / 2
+      } else {
+        desiredLeft = rect.left + (rect.width / 2) - CONFIG.buttonSize / 2 + (window.scrollX || 0)
+      }
+    }
+
+    // If not enough room above, place below
+    const aboveSpace = (window.visualViewport ? (rect.top - vp.offsetY) : rect.top) - CONFIG.margin
+    if (aboveSpace < CONFIG.buttonSize + 6) {
+      // place below
+      if (window.visualViewport) {
+        desiredTop = (rect.bottom - vp.offsetY) + vp.pageTop + 6
+      } else {
+        desiredTop = rect.bottom + (window.scrollY || 0) + 6
+      }
+    }
+
+    // Clamp to viewport so button cannot be off-screen
+    const minLeft = CONFIG.margin
+    const maxLeft = (vp.width || window.innerWidth) - CONFIG.buttonSize - CONFIG.margin
+    const minTop = CONFIG.margin
+    const maxTop = (vp.height || window.innerHeight) - CONFIG.buttonSize - CONFIG.margin
+
+    // desiredLeft/Top are in page coordinate space; when using fixed, we want viewport coords.
+    // Convert page coords to viewport coords:
+    let viewportLeft = desiredLeft - (window.scrollX || 0)
+    let viewportTop = desiredTop - (window.scrollY || 0)
+    if (window.visualViewport) {
+      viewportLeft = desiredLeft - vp.pageLeft
+      viewportTop = desiredTop - vp.pageTop
+    }
+
+    // Final clamping
+    viewportLeft = Math.max(minLeft, Math.min(viewportLeft, maxLeft))
+    viewportTop = Math.max(minTop, Math.min(viewportTop, maxTop))
+
+    button.style.left = Math.round(viewportLeft) + "px"
+    button.style.top = Math.round(viewportTop) + "px"
+
+    // Click behaviour
+    button.addEventListener("click", (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const mailto = createMailtoLink(selectedText)
+      // use location.href to open mail client
+      window.location.href = mailto
+      removeButton()
+    })
+
+    // Hide when user taps outside
+    document.addEventListener("touchstart", onDocTouchStart, { passive: true })
+
+    document.body.appendChild(button)
+    // small delay to allow layout and avoid jumping under native selection handles
+    requestAnimationFrame(() => {
+      button.style.opacity = "1"
+    })
+  }
+
+  function onDocTouchStart(e) {
+    if (!button) return
+    if (!button.contains(e.target)) {
+      removeButton()
+      document.removeEventListener("touchstart", onDocTouchStart)
+    }
+  }
+
+  // Called after selection stabilizes
+  function handleSelectionSettle() {
+    showTimer = null
+    const sel = window.getSelection()
+    if (!sel) return removeButton()
+
+    const text = sel.toString().trim()
+    if (!text) return removeButton()
+
+    // If selection hasn't changed since last time, do nothing; avoids flicker
+    if (text === lastSelection) return
+    lastSelection = text
+
+    showButtonForSelection(text)
+  }
+
+  // Start timer on selection-related events
+  function scheduleShow() {
+    clearTimeout(showTimer)
+    showTimer = setTimeout(handleSelectionSettle, CONFIG.delay)
+  }
+
+  // Cancel when selection removed
+  function cancelShow() {
+    clearTimeout(showTimer)
+    showTimer = null
+    lastSelection = ""
+    // don't immediately remove button on iOS while user interacts with selection handles
+    // but if selection collapsed, remove
+    const sel = window.getSelection()
+    if (!sel || sel.isCollapsed) removeButton()
+  }
+
+  // Events:
+  // - selectionchange covers keyboard-based selections and some touch cases.
+  // - touchend handles mobile taps that end a selection.
+  // - mouseup covers desktop.
+  document.addEventListener("selectionchange", () => {
+    // selectionchange fires a lot; only act when there's a non-empty selection
+    const sel = window.getSelection()
+    if (!sel) return cancelShow()
+    if (sel.isCollapsed) return cancelShow()
+    scheduleShow()
+  })
+
+  document.addEventListener("mouseup", () => {
+    // desktop
+    scheduleShow()
+  })
+
+  document.addEventListener("touchend", () => {
+    // touch-based
+    scheduleShow()
+  }, { passive: true })
+
+  // Hide if user scrolls or resizes or taps elsewhere
+  window.addEventListener("scroll", cancelShow, true)
+  window.addEventListener("resize", cancelShow)
+
+  // If visualViewport changes (keyboard opens/closes), reposition or remove
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", () => {
+      // If the viewport moved (keyboard open), remove button to avoid misplacement
+      // A more advanced approach would re-position but removing is safest.
+      removeButton()
+    })
+  }
+})()
+</script>
+{% endmacro %}
+
+{% macro breadcrumbs() %}
+{% set doc = page | default(value=section) %}
+{% set tw = tw | default(value="ml-auto") %}
+<nav class="prose-ul:text-xs md:prose-ul:text-lg">
+  <ul class="flex w-fit gap-1 {{ tw }} prose-li:list-none mx-0 px-0 border-b border-dashed dark:border-emerald-300 border-black text-lg prose-a:no-underline prose-li:my-1.5 prose-a:font-bold">
+      <li><a class="no-underline text-inherit" href="#bread-crumbs-top">🍞:</a></li>
+    {% set path = doc.ancestors | concat(with=doc.permalink) %}
+    {% for a in path %}
+      {% if not loop.last %}
+        {% set url = get_url(path='@/' ~ a) %}
+      {% else %}
+        {% set url = get_url(path='@/' ~ doc.relative_path) %}
+      {% endif %}
+      <li>/</li>
+      <li><a href="{{ url }}" class="text-red-400 hover:underline">
+        {% if loop.first %}
+        r3ply.com
+        {% else %}
+        {{ doc.components | nth(n=loop.index0-1) }}
+        {% endif %}
+      </a></li>
+    {% endfor %}
+    <li>/</li>
+  </ul>
+</nav>
+{% endmacro  %}
+
+{# Use this for when there's no page or section variable. Just pass in an array of markdown links, e.g. [[foo](/)] #}
+{% macro other_breadcrumbs(links) %}
+{% set tw = tw | default(value="ml-auto") %}
+<nav class="prose-ul:text-xs md:prose-ul:text-lg">
+  <ul class="flex w-fit gap-1 {{ tw }} prose-li:list-none mx-0 px-0 border-b border-dashed dark:border-emerald-300 border-black text-lg prose-a:no-underline prose-li:my-1.5 prose-a:font-bold">
+      <li><a class="no-underline text-inherit" href="#bread-crumbs-top">🍞:</a></li>
+    {% for l in links %}
+      <li>/</li>
+      <li class="prose-a:text-red-400 prose-a:hover:underline">
+        {{ l | markdown | regex_replace(pattern="<p>|</p>", rep="") | safe }}
+      </li>
+    {% endfor %}
+    <li>/</li>
+  </ul>
+</nav>
+{% endmacro  %}

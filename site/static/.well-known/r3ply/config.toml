@@ -1,0 +1,48 @@
+version = "0.0.1"
+enabled = true
+
+[[site]]
+domain = "r3ply.com"
+r3ply = "r3ply.com"
+signet = "3ittH-OrSNatN6CoWg6syw"
+issued = 2025-11-08
+label = "prod"
+
+[[site]]
+domain = "r3ply-site.pages.dev"
+r3ply = "test.r3ply.com"
+signet = "QbToBhCu13sPzj9Btx8dkw"
+issued = 2025-11-01
+label = "test"
+
+[[site]]
+domain = "site.local.test"
+r3ply = "cli.r3ply.test"
+signet = "wWM5hk4DKr1xVRhVq-7aog"
+issued = 2025-10-16
+label = "CLI"
+
+[comments]
+"paths*" = ["/demo/", "/feeds/", "/docs/**/", "/project/**/"]
+cache = true
+
+[comments.email]
+"&comment_{}" = "comment.template.md"
+email_signature_separator = "﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍"
+
+[[moderation.local]]
+"file_path_{}" = "content/comments/{{ comment.ts_rcvd }}_{{ comment.id[:8] }}-{{ author.pseudonym[:7] }}.md"
+
+[[moderation.github]]
+owner = "asimpletune"
+repo = "r3ply-site-comments"
+"file_path_{}" = "{{ comment.ts_rcvd }}_{{ comment.id[:8] }}-{{ author.pseudonym[:7] }}.md"
+"base_branch_{}" = "main"
+"head_branch_{}" = "comment-{{ comment.ts_rcvd }}-{{ comment.id[:8] }}.md"
+"commit_msg_{}" = """Comment submitted:\n
+  - Sender: {{ author.pseudonym }}
+  - Timestamp: {{ comment.ts_rcvd }}
+  - Subject: {{ comment.subject.url }}
+\n> {{ comment.txt | split(pat="\r\n") | join(sep="\n> ") }}"""
+"pr_title_{}" = "New comment ({{ comment.id[:8] }}) on {{ comment.subject.url }} by author `{{ author.pseudonym[:7] }}`"
+"allow*" = ["*@spenc.es"]

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% import "macros/comments.html" as comments %}
+{% import "macros/util.html" as util %}
+
+{% block title %}
+  {% set title = "/" ~ term.name ~ " replies" %}
+  <title>{{ title }}</title>
+  <meta property="og:title" content="{{ title }}" />
+  <meta name="twitter:title" content="{{ title }}" />
+{% endblock title %}
+
+{% block content %}
+{{ util::other_breadcrumbs(links=["[r3ply.com](/)", "[replies](/replies/)", "[" ~ term.name ~ "](/replies/" ~ term.name ~ ")"]) }}
+<div class="my-8 md:my-12 pb-12">
+  <h1 id="replies-title" class="text-3xl">Replies to <a href="{{ current_path }}" class="text-pink-300 hover:text-pink-400 no-underline hover:underline"><span class="text-gray-400">#</span>{{ term.name }}</a></h1>
+  {{ "Below is the comment and its replies, which are only direct descendants." | markdown | safe }}
+  <div class="my-12 not-prose dark:bg-gray-600/75 bg-blue-300/25 border border-blue-400 p-2 md:p-8 rounded-2xl overflow-x-auto">
+    {{ comments::render(comment=term.pages | filter(attribute="slug", value=term.name) | first, template=false) }}
+    <span class="text-center">
+    {{ "See `context`, `replies`, and `thread` above for more options." | markdown | safe }}
+    </span>
+  </div>
+  {{"To browse comments by _all_ descendants, see [threads](/threads/). You can also browse comments [by author](/commenters/), [by page](/subjects/), or [all comments](/comments/)." | markdown | safe }}
+</div>
+{% endblock content %}
+
+{% block allow_comments %}{% set allow_comments = true %}{% endblock allow_comments %}
+{% block subject_path %}{% set subject_path = term.pages[0].extra.comment.document ~ "#" ~ term.pages[0].slug %}{% endblock subject_path %}
+{% block thread_feed_path %}{% endblock thread_feed_path %}
+{% block subscribe_to_thread %}{% endblock subscribe_to_thread %}
+{% block replies_feed_path %}{% set replies_feed_path = "/replies/" ~ term.name ~ "/atom.xml" %}{% endblock replies_feed_path %}
+{% block subscribe_to_replies %}
+<a href="{{ replies_feed_path }}" class="{{ controls }} bg-red-300 hover:bg-red-400 flex items-center gap-1">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      class="inline text-inherit h-4"
+      viewBox="0 0 16 16"
+    >
+      <path
+        d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm1.5 2.5c5.523 0 10 4.477 10 10a1 1 0 1 1-2 0 8 8 0 0 0-8-8 1 1 0 0 1 0-2m0 4a6 6 0 0 1 6 6 1 1 0 1 1-2 0 4 4 0 0 0-4-4 1 1 0 0 1 0-2m.5 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"
+      />
+    </svg>
+  <span class="hidden md:inline">Direct Replies</span>
+  <span class="inline md:hidden">Replies</span>
+</a>
+{% endblock subscribe_to_replies %}
+
+{# An variable named `comments` that is an array of pages has to be set here for the template to work #}
+{% block choose_comments %}
+  {% set comments = term.pages | sort(attribute="date") | slice(start=1) | reverse %}
+{% endblock choose_comments %}
+{% block pending_comments %}{% endblock pending_comments %}
+
+{% block render_comments %}
+  {% for page in comments %}
+    {{ comments::write_thread(head=page, comments=comments, level=1, root=page, template=false) }}
+  {% endfor %}
+{% endblock render_comments %}

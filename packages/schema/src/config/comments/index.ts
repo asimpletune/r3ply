@@ -1,0 +1,91 @@
+import { Schema } from '@exodus/schemasafe'
+import { FromSchema, JSONSchema } from 'json-schema-to-ts'
+import { email } from './email'
+import { moderation, github, webhook, local } from '../moderation'
+export * from './email'
+
+export const comments = {
+  $id: 'https://r3ply.com/schemas/v0.0.1/config/comments.v0.0.1.json',
+  $schema: 'http://json-schema.org/draft-04/schema#',
+  title: 'Comments config',
+  description: 'Control top-level commenting parameters.',
+  $comment: 'See also `comments.email`.',
+  type: 'object',
+  required: [],
+  additionalProperties: false,
+  properties: {
+    enabled: {
+      title: 'Enable comments',
+      description: 'False completely turns off commenting.',
+      type: 'boolean',
+      default: true,
+    },
+    'paths*': {
+      title: 'Site paths',
+      type: 'array',
+      description:
+        'Specifies which path to allow comments on. The "paths*" name means glob patterns can be used.',
+      items: { type: 'string', pattern: '^[\\s\\S]*$' },
+      examples: ['/**', '!/private'],
+      $comment: 'glob patterns can be used',
+    },
+    cache: {
+      title: 'Cache pending comments',
+      description: 'Can be temporarily fetched, e.g. via front end javascript.',
+      type: 'boolean',
+      default: false,
+      $comment:
+        'the pending comments cache is very unstable still. TODO: some kind of basic, automatic moderation to flag for spam. TODO: document better exactly how much time the cache makes comments available (72 hours is reasonable).',
+    },
+    md_to_html: {
+      title: 'Markdown to HTML conversion',
+      description: 'Converts markdown syntax to HTML tags.',
+      type: 'boolean',
+      default: true,
+      $comment:
+        "See also `sanitize_html`. TODO: remove this config variable. If people don't want MD -> HTML conversion they can just not use the converted HTML.",
+    },
+    sanitize_html: {
+      title: 'Sanitize HTML',
+      description:
+        "Nothing from the outside world should be trusted, especially HTML in comments. Only disable this if you reall know what you're doing.",
+      type: 'boolean',
+      default: true,
+      $comment: 'See also `allow_tags`.',
+    },
+    allow_tags: {
+      title: 'HTML Tags to allow',
+      description:
+        'Only tags listed here will be allowed by the HTML sanitizer.',
+      type: 'array',
+      items: { type: 'string', pattern: '^[\\s\\S]*$' },
+      // prettier-ignore
+      default: ['a','br','p','span','strong','s','del','em','u','ul','ol','li','blockquote','hr','code','pre','table','tr','td','th','caption','thead','tbody','tfoot','kbd','mark','sub','small',],
+      // prettier-ignore
+      examples: [
+        ['a','br','p','span','strong','s','del','em','u','ul','ol','li','blockquote','hr','code','pre','table','tr','td','th','caption','thead','tbody','tfoot','kbd','mark','sub','small',],
+      ],
+    },
+    email: {
+      $ref: 'https://r3ply.com/schemas/v0.0.1/config/comments/email.v0.0.1.json',
+    },
+    $comment_sources: {
+      const: ['email'],
+      default: ['email'],
+      $comment: 'TODO: remove this. There are better ways to derive this.',
+    },
+  },
+} as const satisfies JSONSchema & Schema
+export type R3plyCommentsConfig = FromSchema<
+  typeof comments,
+  {
+    references: [
+      typeof email,
+      typeof moderation,
+      typeof github,
+      typeof webhook,
+      typeof local,
+    ]
+  }
+>
+export type R3plyCommentSource = R3plyCommentsConfig['$comment_sources'][number]

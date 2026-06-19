@@ -1,0 +1,64 @@
+{
+  "name": "@r3ply/schema",
+  "author": "Spencer Van Wessem Scorcelletti",
+  "license": "MIT",
+  "private": false,
+  "version": "0.0.1",
+  "description": "Schemas and parsers/validators for the r3ply commenting system",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asimpletune/r3ply"
+  },
+  "bugs": {
+    "url": "https://github.com/asimpletune/r3ply/issues"
+  },
+  "homepage": "https://r3ply.com",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    "./config": {
+      "require": "./dist/generated/index.cjs",
+      "import": "./dist/generated/index.js"
+    },
+    "./config/comments": {
+      "require": "./dist/config/comments/index.cjs",
+      "import": "./dist/config/comments/index.js"
+    },
+    "./config/moderation": {
+      "require": "./dist/config/moderation/index.cjs",
+      "import": "./dist/config/moderation/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build:generate": "tsx src/codegen/generate.ts",
+    "build:compile": "tsup src/generated/index.ts src/config/comments/index.ts src/config/moderation/index.ts --dts --clean --format esm,cjs --external @iarna/toml",
+    "build:schemas": "tsx src/codegen/copy_schemas.ts",
+    "build": "npm run build:generate && npm run build:compile && npm run build:schemas",
+    "test": "npx vitest run",
+    "test:watch": "npx vitest"
+  },
+  "dependencies": {
+    "@exodus/schemasafe": "^1.3.0",
+    "json-schema-to-ts": "^3.1.1",
+    "@iarna/toml": "^2.2.5"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.1",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.5.4",
+    "vitest": "^3.2.4"
+  },
+  "volta": {
+    "node": "22.9.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

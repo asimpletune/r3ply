@@ -1,0 +1,345 @@
+{#-
+  To override a block in an extending template just redeclare it.
+  To extend a block, redeclare it and use `{{ super() }}` to render the parent.
+
+  Sometimes you can't do that, for example if you need to change the parent AND declare it before or after. In which case there are {% block_open/close_tag %}. This way you can always place content before/after some other content AND change the middle content. For example:
+
+  {% block main_tag%}
+  {{ super() }} <!-- re-render the parent's main tag -->
+    <aside>...</aside>{% endblock main_tag%} <!-- add an <aside> -->
+    <!-- AND change the article -->
+    {% block article %}<article>...change the parent</article>{% endblock article %}
+  </main>
+-#}
+{% import "macros/comments.html" as comments %}
+<!DOCTYPE html>
+{% block html %}
+<html lang="{{ lang }}" class="scroll-smooth">
+{% block head %}
+<head>
+  {% block preamble %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block extra_meta %}{% endblock extra_meta %}
+  {% endblock preamble %}
+  {% block title %}
+    {% set title = section.title | default(value=page.title) %}
+    <title>{{ title }}</title>
+    <meta property="og:title" content="{{ title }}" />
+    <meta name="twitter:title" content="{{ title }}" />
+  {% endblock title %}
+  {% block description %}
+    {% if page or section or taxonomy %}
+      {% set description = section.description
+        | default(value=page.description
+        | default(value=config.description)) %}
+    {% endif %}
+    <meta name="description" content="{{ description }}" />
+    <meta property="og:description" content="{{ description }}" />
+    <meta name="twitter:description" content="{{ description }}" />
+  {% endblock description %}
+  {% block styling %}
+    <link rel="stylesheet" href="/style.css">
+    <meta name="color-scheme" content="dark light">
+  {% endblock styling %}
+  {% block favicon %}
+    {% include "includes/favicon.html" %}
+  {% endblock favicon %}
+  {% block share_img %}
+  <meta property="og:image" content="/illustrations/banner_dark.png" />
+  <meta name="twitter:image" content="/illustrations/banner_dark.png" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="650" />
+  <meta name="og:image:alt" content="r3ply share banner with pain pattern" />
+  <meta name="twitter:image:alt" content="r3ply share banner with pain pattern" />
+  {% endblock share_img %}
+</head>
+{% endblock head %}
+{% block body %}
+{% block body_open_tag %}
+<body class="min-h-screen flex flex-col bg-green-50 dark:bg-slate-950 bg-[url(/patterns/bank-note.svg)] dark:bg-[url(/patterns/bank-note_dark.svg)] has-[#commenting-instructions:checked]:overflow-hidden">{% endblock body_open_tag %}
+  {% block top_nav %}
+    {% include "includes/top-nav.html" %}
+  {% endblock top_nav %}
+  {% block header %}
+  {% endblock header %}
+  {% block main %}
+  {% block main_open_tag %}
+   <main class="grow py-6">{% endblock main_open_tag %}
+    {% block article %}
+      {% block article_open_tag %}
+      <article id="content" class="overflow-x-clip prose
+        {% block article_width %}
+          max-w-prose
+        {% endblock article_width %}
+        {% block article_margins_and_padding %}
+          px-4 md:px-0 mx-auto
+        {% endblock article_margins_and_padding %}
+        {% block prose_overrides %}
+          prose-neutral prose-li:marker:text-black prose-pink dark:prose-li:marker:text-neutral-300 prose-hr:border-black dark:prose-hr:border-gray-400 dark:prose-invert dark:prose-code:bg-transparent! dark:prose-code:text-violet-300!
+        {% endblock prose_overrides %}
+        {% block decoration_overrides %}
+          not-dark:prose-a:has-[code]:decoration-2 prose-a:has-[code]:decoration-dashed prose-a:has-[code]:underline-offset-[6px] prose-a:has-[code]:decoration-yellow-400 prose-a:has-[code]:hover:decoration-solid
+        {% endblock decoration_overrides %}
+        {% block article_extra_styling %}{% endblock article_extra_styling %}
+      ">{% endblock article_open_tag %}
+        {% block content %}
+          {# For some reason, if I don't save as a variable first, then it breaks how other pages that extend the content block escape #}
+          {% set content = section.content | default(value=page.content) %}
+          {{ content | safe }}
+        {% endblock content %}
+      {% block article_close_tag %}
+      </article>{% endblock article_close_tag %}
+    {% endblock article %}
+  {% block main_close_tag %}
+  </main>{% endblock main_close_tag %}
+  {% endblock main %}
+  {% block comments %}
+    {% set doc = section | default(value=page | default(value=false)) %}
+    {% block allow_comments %}
+      {% set allow_comments = doc.extra.comments.enabled | default(value=false) %}
+    {% endblock allow_comments %}
+    {% if allow_comments %}
+      {% block choose_comments %}
+      {% set comments = get_section(path="comments/_index.md")
+        | get(key="pages")
+        | filter(attribute="extra.comment.document", value=current_path) %}
+      {% endblock choose_comments %}
+      <section id="comments" class="py-12 border-t-4 border-blue-300 dark:border-pink-300 border-dashed md:pr-6 pr-2 overflow-x-scroll bg-orange-50 bg-[url(/patterns/bank-note.svg)] dark:bg-inherit">
+        <details class="group" open>
+          <summary class="pl-4 pointer-events-none [&_a]:pointer-events-auto">
+            {# title #}
+            <h2 class="text-center text-4xl md:text-5xl font-thin">
+              {% block comments_title %}Comments{% endblock comments_title %} {% block comments_count %}({{ comments | length }}){% endblock comments_count %}
+              <a href="#comments" class="text-pink-300 hover:text-pink-400 hover:underline font-normal">#</a>
+            </h2>
+            {# controls #}
+            {% block comment_controls %}
+            {% block subject_path %}{% set subject_path = current_path %}{% endblock subject_path %}
+            <span id="comment-controls" class="flex justify-center gap-2 md:gap-16 mt-12 text-center">
+              {% set controls = "text-gray-900 font-light text-md tracking-tighter cursor-pointer pointer-events-auto md:text-xl rounded-lg px-2 py-1 md:px-3 md:py-2 border border-gray-500" %}
+              {% block write_comment_control %}
+              <a
+                  href="{{ util::mailto(to=config.extra.comments_email, subject=subject_path, body=config.extra.mail_body_instructions) }}"
+                  class="{{ controls }} bg-yellow-300 hover:bg-yellow-500"
+              >
+                <span class="hidden md:inline">Write Comment</span>
+                <span class="inline md:hidden">Comment</span>
+              </a>
+              {% endblock write_comment_control %}
+              {% block info_comment_control %}
+              <label for="commenting-instructions" class="{{ controls }} bg-green-300 hover:bg-green-400">
+                <span class="font-mono">[?]</span><span> Info</span>
+              </label>
+              {% endblock info_comment_control %}
+              {% block collapse_controls %}
+              <span class="hidden group-open:inline {{ controls }} bg-blue-300 hover:bg-blue-400">
+                <span class="font-mono">[-]</span>
+                <span class="hidden md:inline">Collapse All</span>
+                <span class="inline md:hidden">Collapse</span>
+              </span>
+              <span class="inline group-open:hidden {{ controls }} bg-blue-300 hover:bg-blue-400">
+                <span class="font-mono">[+]</span>
+                <span class="hidden md:inline pointer-events-auto">Expand All</span>
+                <span class="inline md:hidden">Expand</span>
+              </span>
+              {% endblock collapse_controls %}
+            </span>
+            {% endblock comment_controls %}
+            <br>
+            {# subscribe #}
+            {% block subscribe_controls %}
+            <span id="subscribe-controls" class="flex justify-center gap-2 md:gap-16 mb-12 text-center">
+              {% set controls = "text-gray-900 font-light text-md tracking-tighter cursor-pointer md:text-xl rounded-lg px-2 py-1 md:px-3 md:py-2 border border-gray-500" %}
+              {# Subscribe to Thread #}
+              {% block subscribe_to_thread %}
+              {% block thread_feed_path %}{% set thread_feed_path = "/subjects" ~ current_path ~ "atom.xml" %}{% endblock thread_feed_path %}
+              <a href="{{ thread_feed_path }}" class="{{ controls }} bg-red-300 hover:bg-red-400 flex items-center gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor"
+                    class="inline text-inherit h-4"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm1.5 2.5c5.523 0 10 4.477 10 10a1 1 0 1 1-2 0 8 8 0 0 0-8-8 1 1 0 0 1 0-2m0 4a6 6 0 0 1 6 6 1 1 0 1 1-2 0 4 4 0 0 0-4-4 1 1 0 0 1 0-2m.5 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"
+                    />
+                  </svg>
+                <span class="hidden md:inline">Whole Thread</span>
+                <span class="inline md:hidden">Thread</span>
+              </a>
+              {% endblock subscribe_to_thread %}
+
+              {# TODO Subscribe to Replies #}
+              {% block replies_feed_path %}{% endblock replies_feed_path %}
+              {% block subscribe_to_replies %}
+              {% endblock subscribe_to_replies %}
+            </span>
+            {% endblock subscribe_controls %}
+          </summary>
+          {# 'info' modal #}
+          <input type="checkbox" id="commenting-instructions" class="peer hidden">
+          <div class="fixed inset-0 hidden peer-checked:flex z-10 px-6 items-center justify-center bg-slate-950/50 dark:bg-gray-500/80">
+            <div class="pointer-events-auto relative max-h-[90vh] overflow-y-auto p-4 rounded-lg bg-blue-50 dark:bg-slate-900 shadow">
+              <label for="commenting-instructions" class="pointer-events-auto absolute top-3 right-5 text-black dark:text-inherit cursor-pointer">Close</label>
+              <div class="py-6 prose prose-pink dark:prose-invert prose-code:wrap-anywhere text-left">
+                {{ load_data(path="commenting-instructions.md")
+                    | regex_replace(pattern="\{\{ mailto \}\}", rep=util::mailto(to=config.extra.comments_email, subject=subject_path, body=config.extra.mail_body_instructions))
+                    | regex_replace(pattern="\{\{ subject_path \}\}", rep=subject_path)
+                    | regex_replace(pattern="\{\{ mailto_body \}\}", rep=config.extra.mail_body_instructions)
+                    | markdown
+                    | safe }}
+              </div>
+            </div>
+          </div>
+          {% block pending_comments %}
+          {# Set-up pending comments cache if enabled in r3ply config #}
+          {% set r3ply_config = load_data(path="/static/.well-known/r3ply/config.toml") %}
+          {% if r3ply_config.comments.cache %}
+          <script src="/scripts/pending-comments.js"></script>
+          {# Used to determine if we're running in a CF environment or not #}
+          {% set is_pages = get_env(name="CF_PAGES", default=false) %}
+          {% if is_pages %}
+            {% set site_domain = config.extra.prod.site_domain %}
+            {% set cache_server = config.extra.prod.cache_server %}
+          {% else %}
+            {% set site_domain = config.extra.local.site_domain %}
+            {% set cache_server = config.extra.local.cache_server %}
+          {% endif %}
+          <script type="module">
+            // url: URL that points directly to this page's cache endpoint
+            // e.g. https://api.r3ply.com/cache/comments/pending/example.com/blog/posts/123/
+            const cache_server = new URL("{{ cache_server | safe }}")
+            const url = new URL(`/cache/comments/pending/{{ site_domain | safe }}{{ current_path | safe }}`, cache_server)
+            const comments_email = "{{ config.extra.comments_email | safe }}"
+            const current_path = "{{ current_path | safe }}"
+            const email_body_instructions = `{{ config.extra.mail_body_instructions | safe }}`
+            try {
+              const response = await fetch(url)
+              if (!response.ok) {
+                console.warn("HTTP error:", response.status)
+              } else {
+                // filter out pending comments that have already been merged into the permanent comments
+                const pending_comments = await response.json()
+                  .then(all => all
+                  .filter(c => document.getElementById(`${get_slug(c)}`) === null))
+                // produce an array of root-level comments, which may each further be nested
+                const rendered_comments = await render_pending_comments(pending_comments, {
+                  to: comments_email,
+                  subject: current_path,
+                  body: email_body_instructions
+                })
+                // set the text for number of comments that were filtered above
+                document.querySelector('#pending-comments h3 span').innerText = `(${pending_comments.length})`
+                // append each root-level comment to the space intended for them
+                rendered_comments.forEach(c => document.querySelector('#pending-comments-container').append(c))
+              }
+            } catch (error) {
+              console.error(error)
+            }
+
+          </script>
+          <details id="pending-comments" class="mb-6 py-4 pr-4 ml-2 md:ml-6 bg-gray-300/50 dark:bg-gray-700/50
+            border border-dashed dark:border-red-300 rounded-lg
+            group/pending-comments overflow-x-scroll">
+            <summary class="after:content-['[+]'] group-open/pending-comments:after:content-['[-]'] after:font-mono
+              flex justify-end items-center gap-2 cursor-pointer">
+              <h3 class="text-xl font-light text-gray-700 dark:text-green-300">
+                Pending Comments
+                <span>(0)</span>
+              </h3></summary>
+            <div id="pending-comments-container" class="mt-6"></div>
+          </details>
+          {% endif %}
+          {% endblock pending_comments %}
+          {% block render_comments %}
+            {{ comments::write_all(for_comments=comments, doc=doc, template=false) }}
+            {# {% set template_comments = get_section(path="comments/_index.md")
+              | get(key="pages")
+              | filter(attribute="extra.comment.document", value="/debug-comment-template/") %} #}
+            {% set template_comments = [get_page(path="debug-comment-template/for-pending-comments.md")] %}
+            {% if r3ply_config.comments.cache %}
+              {{ comments::write_all(for_comments=template_comments, doc=doc, template=true) }}
+            {% endif %}
+          {% endblock render_comments %}
+        </details>
+      </section>
+      {% block mailto_text_fragment %}
+        {# TODO: I don't know if this does anything right now, so I'm going to comment it out and see. #}
+        {# {{ util::mailto_text_fragment(to=config.extra.comments_email, path=current_path, body=config.extra.mail_body_instructions) }} #}
+      {% endblock mailto_text_fragment %}
+    {% endif %}{# allow_comments #}
+  {% endblock comments %}
+  {% block footer %}
+  {% block footer_open_tag %}
+  <footer id="footer" class="h-full flex flex-col md:bg-[url(/illustrations/r3ply-footer.png)] bg-contain bg-no-repeat
+  bg-center bg-gray-950
+  border-t border-solid border-violet-600 relative">{% endblock footer_open_tag %}
+    <a href="#footer" class="absolute top-3 right-4 text-pink-400 text-2xl">#</a>
+    <img src="/illustrations/r3ply-footer.png" alt="A volcano with a dark background" class="md:hidden">
+    <ul class="grow h-full w-full grid grid-cols-2 md:grid-cols-4 gap-y-6 px-4 md:px-0 mt-2 pb-10 md:py-48 text-slate-300 justify-items-center">
+      {% set sub_menu_headers = "font-medium text-lg md:text-xl" %}
+      {# {% set main_menu_items = "ml-12 md:ml-0" %} #}
+      {% set sub_menu_styles = "pt-3" %}
+      {% set sub_menu_items = "underline decoration-dotted text-sm md:text-lg font-light hover:text-white hover:decoration-solid" %}
+      {# Site Sections #}
+      <li class="w-32 md:w-auto text-right">
+        <span class="text-teal-300 {{ sub_menu_headers }}">Sections<span class="hidden md:inline">:</span></span>
+        <ul class="{{ sub_menu_styles }}">
+          {% set site_sections_styles = "decoration-teal-300" %}
+          <li class="{{ sub_menu_items }} {{ site_sections_styles }}"><a href="{{ get_url(path='@/_index.md') }}">Home</a></li>
+          <li class="{{ sub_menu_items }} {{ site_sections_styles }} cursor-not-allowed text-gray-600 no-underline!">Blog (Soon)</li>
+          <li class="{{ sub_menu_items }} {{ site_sections_styles }}"><a href="{{ get_url(path='@/demo.md', lang=lang) }}" class="hover:text-white">Demo</a></li>
+          <li class="{{ sub_menu_items }} {{ site_sections_styles }}"><a href="{{ get_url(path='@/docs/_index.md') }}" >Docs</a></li>
+          <li class="{{ sub_menu_items }} {{ site_sections_styles }}"><a href="{{ get_url(path='@/project/_index.md', lang=lang) }}">Project</a></li>
+        </ul>
+      </li>
+      {# Doc Links #}
+      <li class="w-32 md:w-auto md:text-right">
+        {% set doc_styles = "decoration-pink-300" %}
+        <span class="text-pink-300 {{ sub_menu_headers }} hover:underline {{ doc_styles }}"><a href="{{ get_url(path='@/docs/_index.md') }}">Docs<span class="hidden md:inline">:</span></a></span>
+        <ul class="{{ sub_menu_styles }}">
+          <li class="{{ sub_menu_items }} {{ doc_styles }}"><a href="{{ get_url(path='@/docs/getting-started.md') }}">Getting Started</a></li>
+          <li class="{{ sub_menu_items }} {{ doc_styles }}"><a href="{{ get_url(path='@/docs/overview.md') }}">Overview</a></li>
+          <li class="{{ sub_menu_items }} {{ doc_styles }}"><a href="{{ get_url(path='@/docs/config.md') }}">Config</a></li>
+          <li class="{{ sub_menu_items }} {{ doc_styles }}"><a href="{{ get_url(path='@/docs/templating.md') }}">Templating</a></li>
+          <li class="{{ sub_menu_items }} {{ doc_styles }}"><a href="{{ get_url(path='@/docs/cli.md') }}">CLI</a></li>
+          <li class="{{ sub_menu_items }} {{ doc_styles }}"><a href="{{ get_url(path='@/docs/schemas.md') }}">Schemas</a></li>
+          <li class="{{ sub_menu_items }} {{ doc_styles }}"><a href="{{ get_url(path='@/docs/api.md') }}">APIs</a></li>
+        </ul>
+      </li>
+      {# "Site" Links #}
+      <li class="w-32 md:w-auto text-right md:text-left">
+        <span class="text-yellow-200 {{ sub_menu_headers }}">Site Links<span class="hidden md:inline">:</span></span>
+        <ul class="{{ sub_menu_styles }}">
+          {% set site_links_styles = "decoration-yellow-200" %}
+          <li class="{{ sub_menu_items }} {{ site_links_styles }}"><a href="https://github.com/asimpletune/r3ply/">GitHub Repo</a></li>
+          <li class="{{ sub_menu_items }} {{ site_links_styles }}"><a href="https://liberapay.com/spence/donate">Donate</a></li>
+          <li class="{{ sub_menu_items }} {{ site_links_styles }}"><a href="/feeds/">RSS Feeds</a></li>
+          <li class="{{ sub_menu_items }} {{ site_links_styles }}"><a href="{{ get_url(path='/sitemap.xml') }}">Sitemap.xml</a></li>
+          <li class="{{ sub_menu_items }} {{ site_links_styles }}"><a href="{{ get_url(path='/taxonomy') }}">Taxonomy</a></li>
+        </ul>
+      </li>
+      {# RSS Feeds #}
+      <li class="w-32 md:w-auto">
+        <span class="text-red-300 {{ sub_menu_headers }}">Comments<span class="hidden md:inline">:</span></span>
+        <ul class="{{ sub_menu_styles }}">
+          {% set comments_styles = "decoration-red-300" %}
+          <li class="{{ sub_menu_items }} {{ comments_styles }}"><a href="/comments/">All Comments</a></li>
+          <li class="{{ sub_menu_items }} {{ comments_styles }}"><a href="/subjects/">By Page</a></li>
+          <li class="{{ sub_menu_items }} {{ comments_styles }}"><a href="/commenters/">By Author</a></li>
+          <li class="{{ sub_menu_items }} {{ comments_styles }}"><a href="/threads/">By Thread</a></li>
+          <li class="{{ sub_menu_items }} {{ comments_styles }}"><a href="/replies/">Replies</a></li>
+          <li class="{{ sub_menu_items }} {{ site_sections_styles }} cursor-not-allowed text-gray-600 no-underline!">Aliases (Soon)</li>
+        </ul>
+      </li>
+    </ul>
+    <p class="font-serif font-thin text-center mb-8 md:mb-3.5 text-gray-800"><a href="{{ get_url(path='@/project/about.md', lang=lang) }}" class="hover:underline decoration-gray-800 tracking-tight">AB IMO VENIMUS</a><span> | <span><a href="https://spenc.es/" class="hover:underline decoration-gray-800"><span class="hidden md:inline">Made in </span>Rome MMXXV</a></p>
+  {% block footer_close_tag %}
+  </footer>{% endblock footer_close_tag %}
+  {% endblock footer %}
+{% block body_close_tag %}
+</body>{% endblock body_close_tag %}
+{% endblock body %}
+</html>
+{% endblock html %}

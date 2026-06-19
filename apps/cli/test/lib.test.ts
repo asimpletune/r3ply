@@ -2,6 +2,15 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { project } from '../src/lib'
 import { util } from '../src/util'
 import mockfs from 'mock-fs'
+import { InitCmdOptions } from '../src/cmds/init'
+import { mailbox } from 'typescript-mailbox-parser'
+
+describe('foo', () => {
+  test('foo', () => {
+    const result = mailbox('bob@example.com')
+    expect(result.ok).toBe(true)
+  })
+})
 
 describe('CLI library', () => {
   beforeEach(() => {
@@ -52,7 +61,7 @@ describe('CLI library', () => {
       (await project.find_project_dir('/root/project/src/.r3ply')).unwrap(),
     ).toBe('/root/project')
   })
-  test('find_config_files', async () => {
+  test('find_site_config_files', async () => {
     mockfs({
       '/r3ply.config.toml': '',
       '/r3ply/config.toml': '',
@@ -61,28 +70,30 @@ describe('CLI library', () => {
       '/a/b/c/d/foo.txt': '',
       '/src': {},
     })
-    expect((await project.find_config_files('/')).unwrap()).toStrictEqual([
+    expect((await project.find_site_config_files('/')).unwrap()).toStrictEqual([
       'r3ply.config.json',
       'r3ply.config.toml',
       'r3ply/config.json',
       'r3ply/config.toml',
     ])
     expect(
-      (await project.find_config_files('/', 'a/b/c/d/foo.txt')).unwrap(),
+      (await project.find_site_config_files('/', 'a/b/c/d/foo.txt')).unwrap(),
     ).toStrictEqual(['a/b/c/d/foo.txt'])
     expect(
-      (await project.find_config_files('/', 'a/b/c/d/foo.txt')).unwrap(),
+      (await project.find_site_config_files('/', 'a/b/c/d/foo.txt')).unwrap(),
     ).toStrictEqual(['a/b/c/d/foo.txt'])
     expect(
-      (await project.find_config_files('/', 'a/**/foo.txt')).unwrap(),
+      (await project.find_site_config_files('/', 'a/**/foo.txt')).unwrap(),
     ).toStrictEqual(['a/b/c/d/foo.txt'])
     expect(
-      (await project.find_config_files('/', 'a/b/c/d/foo.*')).unwrap(),
+      (await project.find_site_config_files('/', 'a/b/c/d/foo.*')).unwrap(),
     ).toStrictEqual(['a/b/c/d/foo.txt'])
-    expect((await project.find_config_files('/src')).unwrap()).toStrictEqual([])
+    expect(
+      (await project.find_site_config_files('/src')).unwrap(),
+    ).toStrictEqual([])
     expect(
       (
-        await project.find_config_files('/src', '../r3ply.config.json')
+        await project.find_site_config_files('/src', '../r3ply.config.json')
       ).unwrap(),
     ).toStrictEqual(['../r3ply.config.json'])
   })
@@ -153,6 +164,34 @@ describe('CLI library', () => {
       ).unwrapErr().message,
     ).toMatch(/No config found at/)
   })
+  test('resolve_file_relative_to_site_config', async () => {
+    mockfs({
+      '/.r3ply': {},
+      '/public/.well-known/r3ply/config.toml': '',
+      '/public/.well-known/r3ply/viaEmail/template.toml': 'Hello, {{ name }}',
+    })
+    const site_config_path = (await project.get_site_config_path('/')).unwrap()
+    const file_resolver =
+      project.resolve_file_relative_to_site_config(site_config_path)
+    expect(await file_resolver('viaEmail/template.toml')).toBe(
+      'Hello, {{ name }}',
+    )
+    expect(await file_resolver('../r3ply/viaEmail/template.toml')).toBe(
+      'Hello, {{ name }}',
+    )
+    expect(await file_resolver('/viaEmail/template.toml')).toBe(
+      'Hello, {{ name }}',
+    )
+    expect(await file_resolver('./viaEmail/template.toml')).toBe(
+      'Hello, {{ name }}',
+    )
+    await expect(file_resolver('foo')).rejects.toThrow(
+      /no such file or directory/,
+    )
+    await expect(file_resolver('r3ply/viaEmail/template.toml')).rejects.toThrow(
+      /no such file or directory/,
+    )
+  })
   test('init_r3ply_project_at', async () => {
     mockfs({
       root: {
@@ -166,18 +205,29 @@ describe('CLI library', () => {
         e: {},
       },
     })
-    expect((await project.init_r3ply_project_at('root/a')).unwrap()).toBe(
-      'root/a/.r3ply',
-    )
+    const init_cmd_opts: InitCmdOptions = {
+      date: '2025-08-15',
+      force: false,
+      rotateKeys: false,
+    }
     expect(
-      (await project.init_r3ply_project_at('root/a', '../e')).unwrapUnchecked(),
+      (await project.init_r3ply_project_at('root/a', init_cmd_opts)).unwrap()
+        .r3ply_dir,
+    ).toBe('root/a/.r3ply')
+    expect(
+      (
+        await project.init_r3ply_project_at('root/a', init_cmd_opts, '../e')
+      ).unwrap().r3ply_dir,
     ).toBe('root/e/.r3ply')
     expect(
-      (await project.init_r3ply_project_at('root', 'b')).unwrapErr().message,
+      (
+        await project.init_r3ply_project_at('root', init_cmd_opts, 'b')
+      ).unwrapErr().message,
     ).toMatch(/Project already initialized/)
     expect(
-      (await project.init_r3ply_project_at('root', 'b/c/d')).unwrapErr()
-        .message,
+      (
+        await project.init_r3ply_project_at('root', init_cmd_opts, 'b/c/d')
+      ).unwrapErr().message,
     ).toMatch(/Nested r3ply project/)
   })
 })

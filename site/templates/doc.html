@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block main_open_tag %}
+<main class="grow flex group">
+  <aside class="sticky top-0 h-screen">
+    {% include "includes/side-nav.html" %}
+  </aside>
+{% endblock main_open_tag %}
+
+  {% block article_width %}
+    max-w-[80ch]
+  {% endblock article_width %}
+  {% block article_margins_and_padding %}
+    px-2 py-10 mx-auto
+  {% endblock article_margins_and_padding %}
+  {% block article_extra_styling %}
+    group-has-[:checked]:text-nowrap
+  {% endblock article_extra_styling %}
+  {% block content %}
+    {% include "includes/side-nav-toggle.html" %}
+    <div class="clear-both"></div>
+    {{ super() }}
+  {% endblock content %}
+</main>

@@ -9,5 +9,5 @@ export default defineConfig({
   loader: { '.eml': 'text' },
   target: 'es2022',
   format: ['esm', 'cjs'],
-  outDir: 'dist',
+  outDir: 'dist'
 })

@@ -1,0 +1,103 @@
+# The URL the site will be built for
+base_url = "https://r3ply.com"
+
+# The site title and description; used in feeds by default.
+title = "r3ply - comments simple as email"
+description = "An open source software project that leverages the power of email to enable commenting on websites."
+
+# The default language; used in feeds.
+default_language = "en"
+
+# Whether to automatically compile all Sass files in the sass directory
+compile_sass = false
+
+# Whether to build a search index to be used later on by a JavaScript library
+build_search_index = true
+
+# A list of glob patterns specifying asset files to ignore when the content
+# directory is processed. Defaults to none, which means that all asset files are
+# copied over to the `public` directory.
+# Example:
+#     ignored_content = ["*.{graphml,xlsx}", "temp.*", "**/build_folder"]
+ignored_content = ["**/content/comments/README.md"]
+
+# The taxonomies to be rendered for the site and their configuration of the default languages
+# Example:
+#     taxonomies = [
+#       {name = "tags", feed = true}, # each tag will have its own feed
+#       {name = "tags"}, # you can have taxonomies with the same name in multiple languages
+#       {name = "categories", paginate_by = 5},  # 5 items per page for a term
+#       {name = "authors"}, # Basic definition: no feed or pagination
+#     ]
+#
+taxonomies = [
+  { name = "commenters", render = true, feed = true },
+  { name = "subjects", render = true, feed = true },
+  { name = "threads", render = true, feed = false },
+  { name = "replies", render = true, feed = true },
+]
+
+[markdown]
+# Whether to do syntax highlighting
+# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
+highlight_code = true
+# The theme to use for code highlighting.
+# See below for list of allowed values.
+highlight_theme = "material-darker-w-json-key-override"
+# note: see <!-- Add key highlighting for JSON ... --> comment for more info
+
+# A list of directories used to search for additional `.sublime-syntax` and `.tmTheme` files.
+extra_syntaxes_and_themes = ["syntaxes-and-highlight-themes"]
+
+# Whether external links are to be opened in a new tab
+# If this is true, a `rel="noopener"` will always automatically be added for security reasons
+external_links_target_blank = true
+
+# Whether footnotes are rendered in the GitHub-style (at the bottom, with back references) or plain (in the place, where they are defined)
+bottom_footnotes = true
+
+# This determines whether to insert a link for each header like the ones you can see on this site if you hover over
+# a header.
+# The default template can be overridden by creating an `anchor-link.html` file in the `templates` directory.
+# This value can be "left", "right", "heading" or "none".
+# "heading" means the full heading becomes the text of the anchor.
+# See "Internal links & deep linking" in the documentation for more information.
+insert_anchor_links = "right"
+
+# Various slugification strategies, see below for details
+# Defaults to everything being a slug
+[slugify]
+paths = "safe"
+taxonomies = "off"
+
+[search]
+index_format = "fuse_json" # or "fuse_javascript"
+
+# Put all your custom variables here
+[extra]
+r3ply_version = "0.0.1"
+r3ply_api_domain = "r3ply.com"
+comments_email = 'r3ply site & docs <r3ply.com@r3ply.com>'
+mail_body_instructions = """
+
+﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍﹍
+1. Write you comment above this ☝️ line
+2. When you're ready just hit send 📤
+3. Do NOT edit the email subject ⚠️
+
+NOTE: Your email address will remain private
+
+A subset of markdown can be used
+(no images, headings, or script tags)
+
+(Email signatures below 👇 will be ignored)
+﹉﹉﹉﹉﹉﹉﹉﹉﹉﹉﹉﹉﹉﹉﹉﹉﹉﹉﹉
+"""
+
+[extra.prod]
+site_domain = "r3ply.com"
+cache_server = "https://r3ply.com"
+
+[extra.local]
+site_domain = "site.local.test"
+cache_server = "http://127.0.0.1:2274"

@@ -1,0 +1,18 @@
+{#
+  `dark` - source of dark variant, e.g. /illustrations/r3ply-landing_dark.png
+  `caption` - caption
+  `add_class` - any extra classes to add to the containig figure tag
+#}
+<figure {% if add_class %}class="{{ add_class }}"{% endif %} >
+  <picture>
+    {% if dark %}
+    {# Dark variant #}
+    <source srcset="{{ dark }}" media="(prefers-color-scheme: dark)">
+    {% endif %}
+    {# Light variant (also remove <p>...</p> that is automatically added) #}
+    {{ body | markdown | regex_replace(pattern=`<p>(?P<img>.*)</p>`, rep=`$img`) | safe }}
+  </picture>
+  {% if caption %}
+  <figcaption class="mt-2 text-sm text-center prose-p:m-0">{{ caption | markdown | safe }}</figcaption>
+  {% endif %}
+</figure>
