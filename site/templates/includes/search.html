@@ -1,26 +1,48 @@
 <style>
-#search-trigger {
+#doc-search-trigger, #nav-search-trigger {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem 0.75rem;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid var(--color-slate-600);
   border-radius: 6px;
-  background: rgba(255,255,255,0.04);
-  color: #64748b;
+  background: var(--color-blue-100);
+  color: var(--color-slate-600);
   font-size: 0.8rem;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
+  @media (prefers-color-scheme: dark) {
+    color: #64748b;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+  }
 }
-#search-trigger:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.07); color: #94a3b8; }
-#search-trigger svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+#doc-search-trigger:hover, #nav-search-trigger:hover {
+  border-color: var(--color-slate-700);
+  background: var(--color-blue-200);
+  color: var(--color-black);
+  color: var(--color-slate-700);
+  @media (prefers-color-scheme: dark) {
+    border-color: rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.07);
+    color: #94a3b8;
+  }
+}
+#doc-search-trigger svg, #nav-search-trigger svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
 .kbd {
   display: inline-flex;
   align-items: center;
   gap: 1px;
   font-size: 0.65rem;
   padding: 0.1rem 0.3rem;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid currentColor;
   border-radius: 3px;
   background: rgba(255,255,255,0.05);
   color: #475569;
@@ -251,7 +273,8 @@ const modal = document.getElementById('search-modal');
 const input = document.getElementById('search-input');
 const results = document.getElementById('search-results');
 const escBtn = document.getElementById('search-esc');
-const trigger = document.getElementById('search-trigger');
+const nav_trigger = document.getElementById('nav-search-trigger');
+const doc_trigger = document.getElementById('doc-search-trigger');
 
 let fuse = null;
 let indexLoaded = false;
@@ -460,7 +483,7 @@ function closeSearch() {
   activeIdx = -1;
 }
 
-trigger.addEventListener('click', openSearch);
+nav_trigger.addEventListener('click', openSearch);
 escBtn.addEventListener('click', closeSearch);
 escBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') closeSearch(); });
 
