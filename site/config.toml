@@ -71,7 +71,10 @@ paths = "safe"
 taxonomies = "off"
 
 [search]
-index_format = "fuse_json" # or "fuse_javascript"
+include_title = true
+include_description = true
+include_content = true
+index_format = "fuse_json"
 
 # Put all your custom variables here
 [extra]
