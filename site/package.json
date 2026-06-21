@@ -9,6 +9,7 @@
     "initialize": "git submodule update --init --remote --recursive",
     "copy:schemas": "cp -r ../packages/schema/dist/schemas static/",
     "build": "zola build $BUILD_OPTS && npx @tailwindcss/cli -i ./css/input.css -o ./public/style.css -m",
+    "build:cf": "if [ \"$CF_PAGES_BRANCH\" = \"main\" ]; then zola build; else zola build --base-url $CF_PAGES_URL; fi",
     "serve": "zola serve --port 7759 $SERVE_OPTS & npx @tailwindcss/cli  -i ./css/input.css -o ./public/style.css --watch && wait",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
