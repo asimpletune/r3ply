@@ -34,91 +34,74 @@ This page is a listing of all the schemas used by r3ply so they can be browsed o
 
 [link](/schemas/v0.0.1/config/site.v0.0.1.json)
 
-{% load_ext_snippet(path="/schemas/v0.0.1/config/site.v0.0.1.json", replace="<src/>") %}
 ```json, name=/schemas/v0.0.1/config/site.v0.0.1.json
-<src/>
+{{ load_ext_snippet(path="/schemas/v0.0.1/config/site.v0.0.1.json", replace="<src/>") }}
 ```
-{% end %}
 
 ### Signet Config
 
 [link](/schemas/v0.0.1/config/signet.v0.0.1.json)
 
-{% load_ext_snippet(path="/schemas/v0.0.1/config/signet.v0.0.1.json", replace="<src/>") %}
 ```json, name=/schemas/v0.0.1/config/signet.v0.0.1.json
-<src/>
+{{ load_ext_snippet(path="/schemas/v0.0.1/config/signet.v0.0.1.json", replace="SRC") }}
 ```
-{% end %}
+
 
 ### Comments Config
 
 [link](/schemas/v0.0.1/config/comments.v0.0.1.json)
 
-{% load_ext_snippet(path="/schemas/v0.0.1/config/comments.v0.0.1.json", replace="<src/>") %}
 ```json, name=/schemas/v0.0.1/config/comments.v0.0.1.json
-<src/>
+{{ load_ext_snippet(path="/schemas/v0.0.1/config/comments.v0.0.1.json", replace="<src/>") }}
 ```
-{% end %}
 
 ### Email (comment source) Config
 
 [link](/schemas/v0.0.1/config/comments/email.v0.0.1.json)
 
-{% load_ext_snippet(path="/schemas/v0.0.1/config/comments/email.v0.0.1.json", replace="<src/>") %}
 ```json, name=/schemas/v0.0.1/config/comments/email.v0.0.1.json
-<src/>
+{{ load_ext_snippet(path="/schemas/v0.0.1/config/comments/email.v0.0.1.json", replace="<src/>") }}
 ```
-{% end %}
 
 ### Moderation Config
 
 [link](/schemas/v0.0.1/config/moderation.v0.0.1.json)
 
-{% load_ext_snippet(path="/schemas/v0.0.1/config/moderation.v0.0.1.json", replace="<src/>") %}
 ```json, name=/schemas/v0.0.1/config/moderation.v0.0.1.json
-<src/>
+{{ load_ext_snippet(path="/schemas/v0.0.1/config/moderation.v0.0.1.json", replace="<src/>") }}
 ```
-{% end %}
 
 ### Github Moderation Config
 
 [link](/schemas/v0.0.1/config/moderation/github.v0.0.1.json)
 
-{% load_ext_snippet(path="/schemas/v0.0.1/config/moderation/github.v0.0.1.json", replace="<src/>") %}
 ```json, name=/schemas/v0.0.1/config/moderation/github.v0.0.1.json
-<src/>
+{{ load_ext_snippet(path="/schemas/v0.0.1/config/moderation/github.v0.0.1.json", replace="<src/>") }}
 ```
-{% end %}
 
 ### Local Moderation Config
 
 [link](/schemas/v0.0.1/config/moderation/local.v0.0.1.json)
 
-{% load_ext_snippet(path="/schemas/v0.0.1/config/moderation/local.v0.0.1.json", replace="<src/>") %}
 ```json, name=/schemas/v0.0.1/config/moderation/local.v0.0.1.json
-<src/>
+{{ load_ext_snippet(path="/schemas/v0.0.1/config/moderation/local.v0.0.1.json", replace="<src/>") }}
 ```
-{% end %}
 
 #### Webhook Moderation Config
 
 [link](/schemas/v0.0.1/config/moderation/webhook.v0.0.1.json)
 
-{% load_ext_snippet(path="/schemas/v0.0.1/config/moderation/webhook.v0.0.1.json", replace="<src/>") %}
 ```json, name=/schemas/v0.0.1/config/moderation/webhook.v0.0.1.json
-<src/>
+{{ load_ext_snippet(path="/schemas/v0.0.1/config/moderation/webhook.v0.0.1.json", replace="<src/>") }}
 ```
-{% end %}
 
 ### Extra Config
 
 [link](/schemas/v0.0.1/config/extra.v0.0.1.json)
 
-{% load_ext_snippet(path="/schemas/v0.0.1/config/extra.v0.0.1.json", replace="<src/>") %}
 ```json, name=/schemas/v0.0.1/config/extra.v0.0.1.json
-<src/>
+{{ load_ext_snippet(path="/schemas/v0.0.1/config/extra.v0.0.1.json", replace="<src/>") }}
 ```
-{% end %}
 
 ## System Config
 
@@ -126,10 +109,8 @@ This page is a listing of all the schemas used by r3ply so they can be browsed o
 
 (I.e. for running a r3ply app)
 
-{% load_ext_snippet(path="/schemas/v0.0.1/config/r3ply.v0.0.1.json", replace="<src/>") %}
 ```json, name=/schemas/v0.0.1/config/r3ply.v0.0.1.json
-<src/>
+{{ load_ext_snippet(path="/schemas/v0.0.1/config/r3ply.v0.0.1.json", replace="<src/>") }}
 ```
-{% end %}
 
 {{ next_prev(prev_path="/docs/cli/", prev_text="r3ply CLI", next_path="/docs/api/", next_text="r3ply APIs") }}

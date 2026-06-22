@@ -2,6 +2,7 @@
 
 ## Next
 
+- Fix broken snippet that loads external data
 - Update copy
 - Pass in $CF_PAGES_URL upon build
 - Add search
