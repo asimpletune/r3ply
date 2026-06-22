@@ -2,6 +2,7 @@
 
 ## Next
 
+- Update copy
 - Pass in $CF_PAGES_URL upon build
 - Add search
 
