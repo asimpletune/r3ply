@@ -97,7 +97,7 @@ And now VSCode will provide detailed editor support:
 ![Screenshot showing vscode catching a very subtle typo in a config](/json-schema-editor-support.png)
 {% end %}
 
-The same can be done for TOML configs – _albeit not yet supported as well[^toml-support-for-json-schema]_ – using [tombi](https://tombi-toml.github.io/tombi/docs/installation), and then adding a schema _comment directive_ at the top.
+The same can be done for TOML configs using [tombi](https://tombi-toml.github.io/tombi/docs/installation), and then adding a schema _comment directive_ at the top.
 
 ```toml
 #:schema https://r3ply.com/schemas/v0.0.1/config/site.v0.0.1.json
@@ -109,8 +109,6 @@ r3ply = "r3ply.com"
 signet = "iSQIIBcF7ka2UURJpFDkYw"
 issued = 2025-08-26
 ```
-
-[^toml-support-for-json-schema]: If you're interested in helping to develop better tooling see [contributing](@/project/contributing.md).
 
 ### Config Variables `&` Types { #variables-and-types }
 
