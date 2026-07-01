@@ -20,7 +20,8 @@
     "@tailwindcss/cli": "^4.1.16",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
-    "tailwindcss": "^4.1.12"
+    "tailwindcss": "^4.1.12",
+    "wrangler": "^4.106.0"
   },
   "dependencies": {
     "fuse.js": "^7.1.0"
