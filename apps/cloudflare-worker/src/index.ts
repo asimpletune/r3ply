@@ -190,9 +190,9 @@ const comment_via_email: EmailExportedHandler<Env> = async (...params) => {
     moderation_channel_implementations,
   )
   const to_mb = mailbox(msg.to)
-  if (Array.isArray(to_mb))
+  if (!to_mb.ok)
     throw new Error(
-      `Email from '${msg.from}' could not be parsed as a mailbox. Error: ${JSON.stringify(to_mb, null, 2)}`,
+      `Email from '${msg.from}' could not be parsed as a mailbox. Error: ${JSON.stringify(to_mb.errors, null, 2)}`,
     )
   const site_domain = to_mb.local
   const site_config = get_site_config(site_domain)
