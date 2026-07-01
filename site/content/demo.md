@@ -14,7 +14,7 @@ The purpose of this page is to demonstrate what a site that uses r3ply _could_ l
 
 In r3ply, comments can be sent as emails. This allows visitors to use their own email clients, giving them a native app experience when writing. More importantly, however, is the pseudonym derived from their email address allows for content moderation while protecting their privacy. **All without needing any type of login system!**
 
-The question then becomes can an email-based comment system be a good experience for users? This demo page is here to demonstrate the possibilities and to let you be the judge.
+The question then becomes can an email-based comment system be a good experience for users? This demo page is here to show the possibilities and to let you be the judge.
 
 Check out the [demo comment section](./#comments) below or continue reading to see the details.
 
