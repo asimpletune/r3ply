@@ -1,3 +1,5 @@
+#:schema https://r3ply.com/schemas/v0.0.1/config/site.v0.0.1.json
+
 version = "0.0.1"
 enabled = true
 
