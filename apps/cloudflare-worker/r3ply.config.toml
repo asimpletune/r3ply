@@ -4,7 +4,7 @@ domains = [
   "test.r3ply.com",
   "api.r3ply.com",
   "r3ply-cloudflare-worker.spence.workers.dev",
-  "r3ply-server.local"
+  "r3ply-server.localhost"
 ]
 
 [[admin]]

@@ -34,7 +34,7 @@ export const DereferenceFileAtURL: util.config.DerferenceFile = async (
       url_path_relative_to_base(
         file_uri_ref,
         new URL(
-          base_url.startsWith('https://') ? base_url : 'https://' + base_url,
+          /^https?:\/\//.test(base_url) ? base_url : 'https://' + base_url,
         ),
       ),
     ).then((response) => response.text())

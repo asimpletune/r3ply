@@ -1,0 +1,6 @@
+http://r3ply-site.localhost {
+	reverse_proxy 127.0.0.1:7759
+}
+r3ply-server.localhost {
+	reverse_proxy 127.0.0.1:8787
+}

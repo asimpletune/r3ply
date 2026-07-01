@@ -176,7 +176,9 @@ const comment_via_email: EmailExportedHandler<Env> = async (...params) => {
   )
   const comment_statefulness = CommentState(env.R3PLY_STAGING_DB)
   const moderation_channel_implementations: comments.email.CommentViaEmailSupportedModerationChannels[] =
-    [moderation.GitHubModeration(github_api_fetcher(env.GITHUB_APP_PW))]
+    env.ENVIRONMENT && env.ENVIRONMENT == "dev" ? [] : [moderation.GitHubModeration(github_api_fetcher(env.GITHUB_APP_PW))]
+  console.log(moderation_channel_implementations.length);
+
   const email_handler = r3ply.comments.viaEmail(
     env.SIGNET_KEY,
     env.EMAIL_ENCRYPT_KEY,
@@ -230,14 +232,7 @@ const comment_via_email: EmailExportedHandler<Env> = async (...params) => {
   } else {
     throw comment_via_email_result.unwrapErr()
   }
-  msg.reply(
-    new EmailMessage(
-      msg.to,
-      msg.from,
-      'Your comment was successfully submitted for moderation.',
-    ),
-  )
-  return Promise.resolve()
+  return msg.reply(create_reply_email(msg, { body: 'Your comment was successfully submitted for moderation.' } )).then(() => Promise.resolve())
 }
 /**
  * Partially applies password to GitHub bot dependency to perform API call
@@ -286,15 +281,16 @@ function github_api_fetcher(
  * @returns a Result type of the file as a string, or an error if there is none
  */
 async function get_site_config(domain: string): Promise<R3plySiteConfig> {
+  const protocol = domain === "r3ply-site.localhost" ? "http" : "https"
   const urls = [
-    new URL(`https://${domain}/.well-known/r3ply/config.toml`),
-    new URL(`https://${domain}/.well-known/r3ply/config.json`),
-    new URL(`https://${domain}/.well-known/r3ply.config.toml`),
-    new URL(`https://${domain}/.well-known/r3ply.config.json`),
-    new URL(`https://${domain}/r3ply.config.toml`),
-    new URL(`https://${domain}/r3ply.config.json`),
-    new URL(`https://${domain}/r3ply.toml`),
-    new URL(`https://${domain}/r3ply.json`),
+    new URL(`${protocol}://${domain}/.well-known/r3ply/config.toml`),
+    new URL(`${protocol}://${domain}/.well-known/r3ply/config.json`),
+    new URL(`${protocol}://${domain}/.well-known/r3ply.config.toml`),
+    new URL(`${protocol}://${domain}/.well-known/r3ply.config.json`),
+    new URL(`${protocol}://${domain}/r3ply.config.toml`),
+    new URL(`${protocol}://${domain}/r3ply.config.json`),
+    new URL(`${protocol}://${domain}/r3ply.toml`),
+    new URL(`${protocol}://${domain}/r3ply.json`),
   ]
   for (const url of urls) {
     const response = await fetch(url, { method: 'GET' })
