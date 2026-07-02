@@ -2,6 +2,8 @@
 
 ## Next
 
+- Add a Caddyfile for proxying r3ply requests locally
+
 ## 0.0.1 (2025-03-15)
 
 - refactor to monorepo

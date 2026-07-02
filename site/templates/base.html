@@ -204,8 +204,8 @@
             {% set site_domain = config.extra.prod.site_domain %}
             {% set cache_server = config.extra.prod.cache_server %}
           {% else %}
-            {% set site_domain = config.extra.local.site_domain %}
-            {% set cache_server = config.extra.local.cache_server %}
+            {% set site_domain = get_env(name="R3PLY_CACHE_SITE", default=config.extra.local.site_domain) %}
+            {% set cache_server = get_env(name="R3PLY_CACHE_SERVER", default=config.extra.local.cache_server) %}
           {% endif %}
           <script type="module">
             // url: URL that points directly to this page's cache endpoint
