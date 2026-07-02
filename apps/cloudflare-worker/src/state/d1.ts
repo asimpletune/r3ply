@@ -262,12 +262,13 @@ export function CommentCache(d1: D1Database): CommentCache {
         .then((_) => Promise.resolve())
     },
     evict: async function (max_age_seconds): Promise<void> {
-      d1
+      return d1
         .prepare(
           `DELETE FROM pending_comments WHERE created_utc < datetime('now', '-' || ? || ' seconds')`,
         )
         .bind(max_age_seconds)
-        .run() as Promise<D1Result<void>>
+        .run()
+        .then((_) => Promise.resolve())
     },
   }
 }
