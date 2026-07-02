@@ -56,6 +56,19 @@ Alternatively, if you need to test the site end-to-end with the cloudflare worke
 2. Start the cloudflare worker from the same directory as above, using `pnpm dev`
 3. Start the static site server from the [site directory](./) with `R3PLY_CACHE_SITE="r3ply-site.localhost" R3PLY_CACHE_SERVER="http://r3ply-server.localhost" pnpm serve`
 
+Then you should be able to test emails locally with
+
+```bash
+EMAIL_FROM="bob@user.com"
+EMAIL_TO="r3ply-site.localhost@r3ply-server.localhost"
+EMAIL_SUBJECT="/demo/"
+re generate email --from "$EMAIL_FROM" --to "$EMAIL_TO" --subject "$EMAIL_SUBJECT" | \
+curl --request POST 'http://localhost:8787/cdn-cgi/handler/email' \
+  --url-query "from=$EMAIL_FROM" \
+  --url-query "to=$EMAIL_TO" \
+  --data-binary @-
+```
+
 [^2]: you may need to install caddy if you haven't already, e.g. `brew install caddy`
 
 ## Variables
