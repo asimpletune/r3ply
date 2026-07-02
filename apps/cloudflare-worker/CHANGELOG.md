@@ -2,6 +2,7 @@
 
 ## Next
 
+- Fix #33 pending_comment cache not being cleared
 - Add a Caddyfile for proxying r3ply requests locally
 
 ## 0.0.1 (2025-03-15)
