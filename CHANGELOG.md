@@ -2,7 +2,9 @@
 
 ## Next
 
-## 0.0.1 (2026-16-19)
+- Update copy
+
+## 0.0.1 (2026-06-19)
 
 - make a monorepo with the following directory structure:
 

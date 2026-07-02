@@ -689,9 +689,10 @@ export namespace generate {
         label,
       })
     } else {
+      const protocol = r3ply == "r3ply-server.localhost" ? "http" : "https"
       return fetch(
         new URL(
-          `https://${r3ply}/signet/${domain}${issued ? `/${issued}` : ''}`,
+          `${protocol}://${r3ply}/signet/${domain}${issued ? `/${issued}` : ''}?format=json`,
         ),
       ).then((response) => {
         if (response.ok)

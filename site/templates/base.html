@@ -204,8 +204,8 @@
             {% set site_domain = config.extra.prod.site_domain %}
             {% set cache_server = config.extra.prod.cache_server %}
           {% else %}
-            {% set site_domain = config.extra.local.site_domain %}
-            {% set cache_server = config.extra.local.cache_server %}
+            {% set site_domain = get_env(name="R3PLY_CACHE_SITE", default=config.extra.local.site_domain) %}
+            {% set cache_server = get_env(name="R3PLY_CACHE_SERVER", default=config.extra.local.cache_server) %}
           {% endif %}
           <script type="module">
             // url: URL that points directly to this page's cache endpoint
@@ -266,8 +266,7 @@
         </details>
       </section>
       {% block mailto_text_fragment %}
-        {# TODO: I don't know if this does anything right now, so I'm going to comment it out and see. #}
-        {# {{ util::mailto_text_fragment(to=config.extra.comments_email, path=current_path, body=config.extra.mail_body_instructions) }} #}
+        {{ util::mailto_text_fragment(to=config.extra.comments_email, path=current_path, body=config.extra.mail_body_instructions) }}
       {% endblock mailto_text_fragment %}
     {% endif %}{# allow_comments #}
   {% endblock comments %}
@@ -314,7 +313,7 @@
         <span class="text-yellow-200 {{ sub_menu_headers }}">Site Links<span class="hidden md:inline">:</span></span>
         <ul class="{{ sub_menu_styles }}">
           {% set site_links_styles = "decoration-yellow-200" %}
-          <li class="{{ sub_menu_items }} {{ site_links_styles }}"><a href="https://github.com/asimpletune/r3ply/">GitHub Repo</a></li>
+          <li class="{{ sub_menu_items }} {{ site_links_styles }}"><a href="https://github.com/r3ply/r3ply/">GitHub Repo</a></li>
           <li class="{{ sub_menu_items }} {{ site_links_styles }}"><a href="https://liberapay.com/spence/donate">Donate</a></li>
           <li class="{{ sub_menu_items }} {{ site_links_styles }}"><a href="/feeds/">RSS Feeds</a></li>
           <li class="{{ sub_menu_items }} {{ site_links_styles }}"><a href="{{ get_url(path='/sitemap.xml') }}">Sitemap.xml</a></li>

@@ -47,6 +47,8 @@ Make sure the server is running first.
 pnpm run dev
 ```
 
+You can do end-to-end testing locally, between your site and a r3ply server, by proxying traffic. There's a [Caddyfile](./Caddyfile) already configured with an example. To use it, update your `/etc/hosts` file to point `r3ply-site.localhost` (your site) and `r3ply-server.localhost` (the r3ply server) to localhost, edit the Caddyfile for the correct port, then run `caddy run` from the same directory. See [comments via email](#comments-via-email) for more details.
+
 ### Comments via Email
 
 You can use `re` - the r3ply CLI tool - to test emails via this r3ply cloudflare worker:

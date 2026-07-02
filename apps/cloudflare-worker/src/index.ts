@@ -35,7 +35,8 @@ export default {
   },
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext) {
     const cache = CommentCache(env.R3PLY_STAGING_DB)
-    await cache.evict(259200) // i.e. 72h in seconds. TODO: configurable by r3ply system config later
+    const eviction = await cache.evict(259200) // i.e. 72h in seconds. TODO: configurable by r3ply system config later
+    console.log(`eviction results: ${eviction.meta.rows_written} row(s) written and ${eviction.meta.rows_read} row(s) read`);
   },
   async email(...params): Promise<void> {
     const [msg, env] = params
@@ -176,7 +177,8 @@ const comment_via_email: EmailExportedHandler<Env> = async (...params) => {
   )
   const comment_statefulness = CommentState(env.R3PLY_STAGING_DB)
   const moderation_channel_implementations: comments.email.CommentViaEmailSupportedModerationChannels[] =
-    [moderation.GitHubModeration(github_api_fetcher(env.GITHUB_APP_PW))]
+    env.ENVIRONMENT && env.ENVIRONMENT == "dev" ? [] : [moderation.GitHubModeration(github_api_fetcher(env.GITHUB_APP_PW))]
+
   const email_handler = r3ply.comments.viaEmail(
     env.SIGNET_KEY,
     env.EMAIL_ENCRYPT_KEY,
@@ -190,9 +192,9 @@ const comment_via_email: EmailExportedHandler<Env> = async (...params) => {
     moderation_channel_implementations,
   )
   const to_mb = mailbox(msg.to)
-  if (Array.isArray(to_mb))
+  if (!to_mb.ok)
     throw new Error(
-      `Email from '${msg.from}' could not be parsed as a mailbox. Error: ${JSON.stringify(to_mb, null, 2)}`,
+      `Email from '${msg.from}' could not be parsed as a mailbox. Error: ${JSON.stringify(to_mb.errors, null, 2)}`,
     )
   const site_domain = to_mb.local
   const site_config = get_site_config(site_domain)
@@ -230,14 +232,10 @@ const comment_via_email: EmailExportedHandler<Env> = async (...params) => {
   } else {
     throw comment_via_email_result.unwrapErr()
   }
-  msg.reply(
-    new EmailMessage(
-      msg.to,
-      msg.from,
-      'Your comment was successfully submitted for moderation.',
-    ),
-  )
-  return Promise.resolve()
+  return msg.reply(create_reply_email(msg, {
+    sender_name: `r3ply (p.p. ${site_domain})`,
+    body: 'Your comment was successfully submitted for moderation.'
+  })).then(() => Promise.resolve())
 }
 /**
  * Partially applies password to GitHub bot dependency to perform API call
@@ -286,15 +284,16 @@ function github_api_fetcher(
  * @returns a Result type of the file as a string, or an error if there is none
  */
 async function get_site_config(domain: string): Promise<R3plySiteConfig> {
+  const protocol = domain === "r3ply-site.localhost" ? "http" : "https"
   const urls = [
-    new URL(`https://${domain}/.well-known/r3ply/config.toml`),
-    new URL(`https://${domain}/.well-known/r3ply/config.json`),
-    new URL(`https://${domain}/.well-known/r3ply.config.toml`),
-    new URL(`https://${domain}/.well-known/r3ply.config.json`),
-    new URL(`https://${domain}/r3ply.config.toml`),
-    new URL(`https://${domain}/r3ply.config.json`),
-    new URL(`https://${domain}/r3ply.toml`),
-    new URL(`https://${domain}/r3ply.json`),
+    new URL(`${protocol}://${domain}/.well-known/r3ply/config.toml`),
+    new URL(`${protocol}://${domain}/.well-known/r3ply/config.json`),
+    new URL(`${protocol}://${domain}/.well-known/r3ply.config.toml`),
+    new URL(`${protocol}://${domain}/.well-known/r3ply.config.json`),
+    new URL(`${protocol}://${domain}/r3ply.config.toml`),
+    new URL(`${protocol}://${domain}/r3ply.config.json`),
+    new URL(`${protocol}://${domain}/r3ply.toml`),
+    new URL(`${protocol}://${domain}/r3ply.json`),
   ]
   for (const url of urls) {
     const response = await fetch(url, { method: 'GET' })

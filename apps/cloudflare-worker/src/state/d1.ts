@@ -177,7 +177,7 @@ export interface CommentCache {
   ): Promise<D1Result<void>>
   all(domain: string): Promise<CachedComment[]>
   clear(): Promise<void>
-  evict(max_age_seconds: number): Promise<void>
+  evict(max_age_seconds: number): Promise<D1Result<Record<string, unknown>>>
 }
 
 export function CommentCache(d1: D1Database): CommentCache {
@@ -261,13 +261,13 @@ export function CommentCache(d1: D1Database): CommentCache {
         .run()
         .then((_) => Promise.resolve())
     },
-    evict: async function (max_age_seconds): Promise<void> {
-      d1
+    evict: async function (max_age_seconds): Promise<D1Result<Record<string, unknown>>> {
+      return d1
         .prepare(
           `DELETE FROM pending_comments WHERE created_utc < datetime('now', '-' || ? || ' seconds')`,
         )
         .bind(max_age_seconds)
-        .run() as Promise<D1Result<void>>
+        .run()
     },
   }
 }

@@ -1,6 +1,8 @@
 # r3ply
 
-Receive comments via email. Check out the [docs](https://r3ply.com/docs/) or read the [project structure](#project-structure) of this monorepo to learn more about contributing.
+r3ply is an open-source project that allows websites to receive comments via email. It receives emailed comments on your behalf and packages them for your site to use.
+
+Visit [r3ply.com](https://r3ply.com) for more. Check out the [docs](https://r3ply.com/docs/) or read the [project structure](#project-structure) of this monorepo to learn more about contributing.
 
 ## Project structure
 

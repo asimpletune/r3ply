@@ -50,6 +50,27 @@ The local cache stores comments as files in [`.r3ply/static/cache/comments/pendi
 
 [^1]: currently they use a `.html` extension, because that was the easiest way to match [the API](./content/docs/api.md), but the static server sets their content type header to json. If you know of a better or easier way to solve this then please file an issue.
 
+Alternatively, if you need to test the site end-to-end with the cloudflare worker, you need to run a proxy and set some environment variables. Follow these steps:
+
+1. Start the proxy from within the [r3ply cloudflare app](../apps/cloudflare-worker/) directory, with `caddy run` [^2]
+2. Start the cloudflare worker from the same directory as above, using `pnpm dev`
+3. Start the static site server from the [site directory](./) with `R3PLY_CACHE_SITE="r3ply-site.localhost" R3PLY_CACHE_SERVER="http://r3ply-server.localhost" pnpm serve`
+
+Then you should be able to test emails locally with
+
+```bash
+EMAIL_FROM="bob@user.com"
+EMAIL_TO="r3ply-site.localhost@r3ply-server.localhost"
+EMAIL_SUBJECT="/demo/"
+re generate email --from "$EMAIL_FROM" --to "$EMAIL_TO" --subject "$EMAIL_SUBJECT" | \
+curl --request POST 'http://localhost:8787/cdn-cgi/handler/email' \
+  --url-query "from=$EMAIL_FROM" \
+  --url-query "to=$EMAIL_TO" \
+  --data-binary @-
+```
+
+[^2]: you may need to install caddy if you haven't already, e.g. `brew install caddy`
+
 ## Variables
 
 ### Zola `extra` Variables

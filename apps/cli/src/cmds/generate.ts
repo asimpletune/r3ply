@@ -102,7 +102,6 @@ function generate_cmd(cwd: string) {
     .option(
       '--label <string>',
       'e.g. "prod", "test"',
-      project.DEFAULT_CLI_SIGNET_LABEL,
     )
     .action(async (options: GenerateSignetCmdOpts) => {
       const parent_opts = generate_cmd.parent!.opts<BaseCmdOptions>()
